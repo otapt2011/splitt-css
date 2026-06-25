@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS Split · 4‑way</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+    <style>
+        /* compact overrides */
+        body {
+            background: #f8fafc;
+        }
+        .cm-s-default .cm-comment {
+            color: #6b7280;
+        }
+        .cm-s-default .cm-string {
+            color: #0b7e6b;
+        }
+        .cm-s-default .cm-number {
+            color: #b36b00;
+        }
+        .cm-s-default .cm-atom {
+            color: #b36b00;
+        }
+        .CodeMirror {
+            height: auto !important;
+            min-height: 140px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0;
+            padding: 2px 0;
+            flex: 1;
+        }
+        .CodeMirror-scroll {
+            min-height: 140px;
+            padding: 4px 6px;
+        }
+        .cm-s-default .cm-property {
+            color: #0b4f8a;
+        }
+        .cm-s-default .cm-keyword {
+            color: #a626a4;
+        }
+        .cm-s-default .cm-operator {
+            color: #a626a4;
+        }
+        .cm-s-default .cm-variable {
+            color: #0b4f8a;
+        }
+        .cm-s-default .cm-builtin {
+            color: #0b7e6b;
+        }
+        .cm-s-default .cm-tag {
+            color: #a626a4;
+        }
+
+        /* output panels now use CodeMirror too */
+        .output-panel .CodeMirror {
+            min-height: 100px;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            flex: 1;
+        }
+        .output-panel .CodeMirror-scroll {
+            min-height: 100px;
+            padding: 4px 6px;
+        }
+        .output-panel {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+        }
+        .output-panel .CodeMirror {
+            flex: 1;
+        }
+
+        .compact-btn {
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            transition: all 0.15s;
+            cursor: pointer;
+            border: none;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        .compact-btn:hover {
+            background: #e2e8f0;
+        }
+        .compact-btn-primary {
+            background: #0f172a;
+            color: white;
+        }
+        .compact-btn-primary:hover {
+            background: #1e293b;
+        }
+        .compact-btn-outline {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+        }
+        .compact-btn-outline:hover {
+            background: #f1f5f9;
+        }
+        .compact-btn-sm {
+            padding: 2px 8px;
+            font-size: 11px;
+        }
+        .icon-split {
+            margin-right: 4px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .CodeMirror {
+                font-size: 12px;
+                min-height: 100px;
+            }
+            .CodeMirror-scroll {
+                min-height: 100px;
+            }
+        }
+
+        .size-label {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: normal;
+            margin-left: 4px;
+        }
+        #layoutCount,
+        #styleCount,
+        #colorsCount,
+        #fontsCount {
+            display: none !important;
+        }
+        .size-label {
+            font-size: 8px !important;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10 flex-shrink-0">
+        <div class="max-w-6xl mx-auto px-3 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-code-split text-indigo-500 text-xl"></i>
+                <h1 class="text-base font-bold text-slate-800 tracking-tight">CSS Split</h1>
+                <span class="text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">4‑way</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="uploadBtn" class="compact-btn compact-btn-sm flex items-center gap-1.5" title="Upload .css file">
+                    <i class="fa-solid fa-upload text-[11px]"></i>
+                    <span class="hidden sm:inline text-xs">Upload</span>
+                </button>
+                <button id="pasteBtn" class="compact-btn compact-btn-sm flex items-center gap-1.5" title="Paste from clipboard">
+                    <i class="fa-regular fa-clipboard text-[11px]"></i>
+                    <span class="hidden sm:inline text-xs">Paste</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-6xl mx-auto px-3 py-4 flex-1 min-h-0 flex flex-col w-full">
+
+        <!-- INPUT -->
+        <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex-shrink-0 h-1/3">
+            <div class="flex items-center justify-between px-3 py-1.5 bg-slate-50 border-b border-slate-200">
+                <span class="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                    <i class="fa-regular fa-file-lines text-slate-400"></i>
+                    Enter CSS
+                </span>
+                <span class="text-[10px] text-slate-400" id="charCount">0 chars · 0 B</span>
+            </div>
+            <div class="p-1.5">
+                <textarea id="cssInput" class="hidden">/* comments ahoy! */
+                    .hello {
+                        margin: 0;
+                        /* comment */
+                        color: #333;
+                        font-size: 16px;
+                    }
+                    /* even more comments */
+                    .example {
+                        padding: 10px 20px;
+                        background: #f0f0f0;
+                        border: 1px solid #ccc;
+                        display: flex;
+                        width: 100%;
+                        position: relative;
+                        font-family: 'Arial', sans-serif;
+                        color: #222;
+                    }
+                    @font-face {
+                        font-family: 'MyFont';
+                        src: url('font.woff2');
+                    }
+                </textarea>
+            </div>
+        </div>
+
+        <!-- ACTION ROW -->
+        <div class="flex items-center justify-between gap-3 mt-3 flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <button id="splitBtn" class="compact-btn compact-btn-primary flex items-center gap-1.5 text-xs px-4 py-1.5">
+                    <i class="fa-solid fa-code-split icon-split text-[12px]"></i>
+                    <span id="splitLabel">Split!</span>
+                </button>
+                <span id="statusMsg" class="text-[11px] text-slate-400"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="resetBtn" class="compact-btn compact-btn-sm compact-btn-outline text-[11px] flex items-center gap-1" title="Reset to default CSS">
+                    <i class="fa-solid fa-rotate-right text-[11px]"></i>
+                    <span class="hidden xs:inline">Reset</span>
+                </button>
+                <button id="clearBtn" class="compact-btn compact-btn-sm compact-btn-outline text-[11px] flex items-center gap-1" title="Clear input &amp; outputs">
+                    <i class="fa-regular fa-trash-can text-[11px]"></i>
+                    <span class="hidden xs:inline">Clear</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- OUTPUTS (4‑column grid) -->
+        <div id="outputs" class="hidden gap-2 mt-3 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 flex-1 min-h-0">
+            <!-- layout.css -->
+            <div class="output-panel bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-0">
+                <div class="flex items-center justify-between px-2 py-1 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+                    <span class="text-[11px] font-medium text-slate-600 flex items-center gap-1">
+                        <i class="fa-regular fa-file-code text-slate-400"></i>
+                        layout.css
+                        <span class="text-[9px] text-slate-400 font-normal ml-0.5" id="layoutCount"></span>
+                        <span class="size-label" id="layoutSize"></span>
+                    </span>
+                    <div class="flex items-center gap-0.5">
+                        <button class="copy-btn compact-btn compact-btn-sm compact-btn-outline text-[10px] flex items-center gap-0.5" data-target="layoutOutput">
+                            <i class="fa-regular fa-copy text-[10px]"></i>
+                        </button>
+                        <button class="download-btn compact-btn compact-btn-sm compact-btn-outline text-[10px] flex items-center gap-0.5" data-target="layoutOutput" data-filename="layout.css">
+                            <i class="fa-solid fa-download text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="layoutOutput" class="output-code"></div>
+            </div>
+
+            <!-- style.css -->
+            <div class="output-panel bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-0">
+                <div class="flex items-center justify-between px-2 py-1 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+                    <span class="text-[11px] font-medium text-slate-600 flex items-center gap-1">
+                        <i class="fa-regular fa-file-code text-slate-400"></i>
+                        style.css
+                        <span class="text-[9px] text-slate-400 font-normal ml-0.5" id="styleCount"></span>
+                        <span class="size-label" id="styleSize"></span>
+                    </span>
+                    <div class="flex items-center gap-0.5">
+                        <button class="copy-btn compact-btn compact-btn-sm compact-btn-outline text-[10px] flex items-center gap-0.5" data-target="styleOutput">
+                            <i class="fa-regular fa-copy text-[10px]"></i>
+                        </button>
+                        <button class="download-btn compact-btn compact-btn-sm compact-btn-outline text-[10px] flex items-center gap-0.5" data-target="styleOutput" data-filename="style.css">
+                            <i class="fa-solid fa-download text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="styleOutput" class="output-code"></div>
+            </div>
+
+            <!-- fonts.css -->
+            <div class="output-panel bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-0">
+                <div class="flex items-center justify-between px-2 py-1 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+                    <span class="text-[11px] font-medium text-slate-600 flex items-center gap-1">
+                        <i class="fa-regular fa-file-code text-slate-400"></i>
+                        fonts.css
+                        <span class="text-[9px] text-slate-400 font-normal ml-0.5" id="fontsCount"></span>
+                        <span class="size-label" id="fontsSize"></span>
+                    </span>
+                    <div class="flex items-center gap-0.5">
+                        <button class="copy-btn compact-btn compact-btn-sm compact-btn-outline text-[10px] flex items-center gap-0.5" data-target="fontsOutput">
+                            <i class="fa-regular fa-copy text-[10px]"></i>
+                        </button>
+                        <button class="download-btn compact-btn compact-btn-sm compact-btn-outline text-[10px] flex items-center gap-0.5" data-target="fontsOutput" data-filename="fonts.css">
+                            <i class="fa-solid fa-download text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="fontsOutput" class="output-code"></div>
+            </div>
+
+            <!-- colors.css -->
+            <div class="output-panel bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-0">
+                <div class="flex items-center justify-between px-2 py-1 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+                    <span class="text-[11px] font-medium text-slate-600 flex items-center gap-1">
+                        <i class="fa-regular fa-file-code text-slate-400"></i>
+                        colors.css
+                        <span class="text-[9px] text-slate-400 font-normal ml-0.5" id="colorsCount"></span>
+                        <span class="size-label" id="colorsSize"></span>
+                    </span>
+                    <div class="flex items-center gap-0.5">
+                        <button class="copy-btn compact-btn compact-btn-sm compact-btn-outline text-[10px] flex items-center gap-0.5" data-target="colorsOutput">
+                            <i class="fa-regular fa-copy text-[10px]"></i>
+                        </button>
+                        <button class="download-btn compact-btn compact-btn-sm compact-btn-outline text-[10px] flex items-center gap-0.5" data-target="colorsOutput" data-filename="colors.css">
+                            <i class="fa-solid fa-download text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="colorsOutput" class="output-code"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-6xl mx-auto px-3 py-1 w-full flex-shrink-0 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-300">
+        <span>layout · style · fonts · colors</span>
+        <span>v0.3</span>
+    </footer>
+
+    <input type="file" id="fileInput" accept=".css" />
+
+    <!-- CodeMirror -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js">
+    </script>
+
+    <script>
+        // ================================================================
+        // 1. PARSER (standalone)
+        // ================================================================
+        function parseCSS(css) {
+            if (css.indexOf(";!important") > -1) css = css.replace(/;!important/g, " !important");
+            if (css.indexOf("; !important") > -1) css = css.replace(/; !important/g, " !important");
+
+            function stylesheet() { return { stylesheet: { rules: rules() } }; }
+
+            function open() { return match(/^{\s*/); }
+
+            function close() { return match(/^}\s*/); }
+
+            function rules() {
+                var node, rules = [];
+                whitespace();
+                comments(rules);
+                while (css[0] != '}' && (node = atrule() || rule())) {
+                    comments(rules);
+                    rules.push(node);
+                }
+                return rules;
+            }
+
+            function match(re) {
+                var m = re.exec(css);
+                if (!m) return;
+                css = css.slice(m[0].length);
+                return m;
+            }
+
+            function whitespace() { match(/^\s*/); }
+
+            function comments(rules) {
+                rules = rules || [];
+                var c;
+                while (c = comment()) { rules.push(c); }
+                return rules;
+            }
+
+            function comment() {
+                if ('/' == css[0] && '*' == css[1]) {
+                    var i = 2;
+                    while ('*' != css[i] || '/' != css[i + 1]) ++i;
+                    i += 2;
+                    var comment = css.slice(2, i - 2);
+                    css = css.slice(i);
+                    whitespace();
+                    return { comment: comment };
+                }
+            }
+
+            function selector() {
+                var m = match(/^([^{]+)/);
+                if (!m) return;
+                var comment = m.input;
+                comment = comment.match(/\}(.*?)\*\//);
+                var selector = m[0].trim().split(/\s*,\s*/);
+                return { selector: selector, comments: comment };
+            }
+
+            function declaration() {
+                var prop = match(/^(\*?[-\w]+)\s*/);
+                if (!prop) return;
+                var comment = prop.input.match(/\/\*(.*?)\*\//);
+                prop = prop[0];
+                if (!match(/^:\s*/)) return;
+                var val = match(/^((?:'(?:\\'|.)*?'|"(?:\\"|.)*?"|\([^\)]*?\)|[^};])+)\s*/);
+                if (!val) return;
+                val = val[0].trim();
+                match(/^[;\s]*/);
+                var full = prop + ": " + val + ";";
+                return { property: prop, value: val, comments: comment, fullDec: full };
+            }
+
+            function keyframe() {
+                var m, vals = [];
+                while (m = match(/^(from|to|\d+%|\.\d+%|\d+\.\d+%)\s*/)) {
+                    vals.push(m[1]);
+                    match(/^,\s*/);
+                }
+                if (!vals.length) return;
+                return { values: vals, declarations: declarations() };
+            }
+
+            function keyframes() {
+                var m = match(/^@([-\w]+)?keyframes */);
+                if (!m) return;
+                var vendor = m[1];
+                var m2 = match(/^([-\w]+)\s*/);
+                if (!m2) return;
+                var name = m2[1];
+                if (!open()) return;
+                comments();
+                var frame, frames = [];
+                while (frame = keyframe()) { frames.push(frame);
+                    comments(); }
+                if (!close()) return;
+                return { name: name, vendor: vendor, keyframes: frames };
+            }
+
+            function media() {
+                var m = match(/^@media *([^{]+)/);
+                if (!m) return;
+                var media = m[1].trim();
+                if (!open()) return;
+                comments();
+                var style = rules();
+                if (!close()) return;
+                return { media: media, rules: style };
+            }
+
+            // ---- @font-face support ----
+            function fontface() {
+                var m = match(/^@font-face\s*/);
+                if (!m) return;
+                if (!open()) return;
+                comments();
+                var decls = [];
+                var decl;
+                while (decl = declaration()) {
+                    decls.push(decl);
+                    comments();
+                }
+                if (!close()) return;
+                return { fontface: true, declarations: decls };
+            }
+
+            function atimport() { return _atrule('import'); }
+
+            function atcharset() { return _atrule('charset'); }
+
+            function _atrule(name) {
+                var m = match(new RegExp('^@' + name + ' *([^;\\n]+);\\s*'));
+                if (!m) return;
+                var ret = {};
+                ret[name] = m[1].trim();
+                return ret;
+            }
+
+            function declarations() {
+                var decls = [];
+                if (!open()) return;
+                comments();
+                var decl;
+                while (decl = declaration()) { decls.push(decl);
+                    comments(); }
+                if (!close()) return;
+                return decls;
+            }
+
+            function atrule() {
+                return keyframes() || media() || fontface() || atimport() || atcharset();
+            }
+
+            function rule() {
+                var sel = selector();
+                if (!sel) return;
+                comments();
+                return { selectors: sel, declarations: declarations() };
+            }
+
+            return stylesheet();
+        }
+
+        // ================================================================
+        // 2. CSS BEAUTIFY (standalone)
+        // ================================================================
+        function cssbeautify(style, opt) {
+            opt = opt || {};
+            var indent = opt.indent || '\t';
+            var openbrace = opt.openbrace === 'end-of-line';
+            var autosemicolon = !!opt.autosemicolon;
+            var index = 0,
+                length = style.length,
+                blocks = [],
+                formatted = '',
+                ch, ch2, str, state, depth = 0,
+                quote = null,
+                comment = false,
+                State = { Start: 0, AtRule: 1, Block: 2, Selector: 3, Ruleset: 4, Property: 5, Separator: 6,
+                    Expression: 7, URL: 8 };
+            state = State.Start;
+
+            function isWhitespace(c) { return c === ' ' || c === '\n' || c === '\t' || c === '\r' || c === '\f'; }
+
+            function isQuote(c) { return c === "'" || c === '"'; }
+
+            function isName(c) {
+                return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || '-_*.:#'.indexOf(c) >= 0;
+            }
+
+            function trimRight(s) { return s.replace(/\s+$/, ''); }
+
+            function appendIndent() { for (var i = depth; i > 0; i--) formatted += indent; }
+
+            function openBlock() {
+                formatted = trimRight(formatted);
+                if (openbrace) formatted += ' {';
+                else { formatted += '\n';
+                    appendIndent();
+                    formatted += '{'; }
+                if (ch2 !== '\n') formatted += '\n';
+                depth++;
+            }
+
+            function closeBlock() {
+                depth--;
+                formatted = trimRight(formatted);
+                if (autosemicolon && formatted.charAt(formatted.length - 1) !== ';') formatted += ';';
+                formatted += '\n';
+                appendIndent();
+                formatted += '}';
+                blocks.push(formatted);
+                formatted = '';
+            }
+
+            style = style.replace(/\r\n/g, '\n');
+
+            while (index < length) {
+                ch = style.charAt(index);
+                ch2 = style.charAt(index + 1);
+                index++;
+                if (isQuote(quote)) {
+                    formatted += ch;
+                    if (ch === quote) quote = null;
+                    if (ch === '\\' && ch2 === quote) { formatted += ch2;
+                        index++; }
+                    continue;
+                }
+                if (isQuote(ch)) { formatted += ch;
+                    quote = ch; continue; }
+                if (comment) {
+                    formatted += ch;
+                    if (ch === '*' && ch2 === '/') { comment = false;
+                        formatted += ch2;
+                        index++; }
+                    continue;
+                }
+                if (ch === '/' && ch2 === '*') { comment = true;
+                    formatted += ch;
+                    formatted += ch2;
+                    index++; continue; }
+
+                if (state === State.Start) {
+                    if (blocks.length === 0 && isWhitespace(ch) && formatted.length === 0) continue;
+                    if (ch <= ' ' || ch.charCodeAt(0) >= 128) { state = State.Start;
+                        formatted += ch; continue; }
+                    if (isName(ch) || ch === '@') {
+                        var str2 = trimRight(formatted);
+                        if (str2.length === 0) { if (blocks.length > 0) formatted = '\n\n'; } else {
+                            if (str2.charAt(str2.length - 1) === '}' || str2.charAt(str2.length - 1) === ';') {
+                                formatted = str2 + '\n\n';
+                            } else {
+                                while (true) {
+                                    var c2 = formatted.charAt(formatted.length - 1);
+                                    if (c2 !== ' ' && c2.charCodeAt(0) !== 9) break;
+                                    formatted = formatted.substr(0, formatted.length - 1);
+                                }
+                            }
+                        }
+                        formatted += ch;
+                        state = (ch === '@') ? State.AtRule : State.Selector;
+                        continue;
+                    }
+                }
+
+                if (state === State.AtRule) {
+                    if (ch === ';') { formatted += ch;
+                        state = State.Start; continue; }
+                    if (ch === '{') { openBlock();
+                        state = State.Block; continue; }
+                    formatted += ch;
+                    continue;
+                }
+
+                if (state === State.Block) {
+                    if (isName(ch)) {
+                        var str3 = trimRight(formatted);
+                        if (str3.length === 0) { if (blocks.length > 0) formatted = '\n\n'; } else {
+                            if (str3.charAt(str3.length - 1) === '}') { formatted = str3 + '\n\n'; } else {
+                                while (true) {
+                                    var c3 = formatted.charAt(formatted.length - 1);
+                                    if (c3 !== ' ' && c3.charCodeAt(0) !== 9) break;
+                                    formatted = formatted.substr(0, formatted.length - 1);
+                                }
+                            }
+                        }
+                        appendIndent();
+                        formatted += ch;
+                        state = State.Selector;
+                        continue;
+                    }
+                    if (ch === '}') { closeBlock();
+                        state = State.Start; continue; }
+                    formatted += ch;
+                    continue;
+                }
+
+                if (state === State.Selector) {
+                    if (ch === '{') { openBlock();
+                        state = State.Ruleset; continue; }
+                    if (ch === '}') { closeBlock();
+                        state = State.Start; continue; }
+                    formatted += ch;
+                    continue;
+                }
+
+                if (state === State.Ruleset) {
+                    if (ch === '}') { closeBlock();
+                        state = State.Start; if (depth > 0) state = State.Block; continue; }
+                    if (ch === '\n') { formatted = trimRight(formatted);
+                        formatted += '\n'; continue; }
+                    if (!isWhitespace(ch)) {
+                        formatted = trimRight(formatted);
+                        formatted += '\n';
+                        appendIndent();
+                        formatted += ch;
+                        state = State.Property;
+                        continue;
+                    }
+                    formatted += ch;
+                    continue;
+                }
+
+                if (state === State.Property) {
+                    if (ch === ':') { formatted = trimRight(formatted);
+                        formatted += ': ';
+                        state = State.Expression; if (isWhitespace(ch2)) state = State.Separator; continue; }
+                    if (ch === '}') { closeBlock();
+                        state = State.Start; if (depth > 0) state = State.Block; continue; }
+                    formatted += ch;
+                    continue;
+                }
+
+                if (state === State.Separator) {
+                    if (!isWhitespace(ch)) { formatted += ch;
+                        state = State.Expression; continue; }
+                    if (isQuote(ch2)) state = State.Expression;
+                    continue;
+                }
+
+                if (state === State.Expression) {
+                    if (ch === '}') { closeBlock();
+                        state = State.Start; if (depth > 0) state = State.Block; continue; }
+                    if (ch === ';') { formatted = trimRight(formatted);
+                        formatted += ';\n';
+                        state = State.Ruleset; continue; }
+                    formatted += ch;
+                    if (ch === '(') {
+                        if (formatted.charAt(formatted.length - 2) === 'l' &&
+                            formatted.charAt(formatted.length - 3) === 'r' &&
+                            formatted.charAt(formatted.length - 4) === 'u') {
+                            state = State.URL;
+                            continue;
+                        }
+                    }
+                    continue;
+                }
+
+                if (state === State.URL) {
+                    if (ch === ')' && formatted.charAt(formatted.length - 1) !== '\\') {
+                        formatted += ch;
+                        state = State.Expression;
+                        continue;
+                    }
+                }
+                formatted += ch;
+            }
+
+            formatted = blocks.join('') + formatted;
+            return formatted;
+        }
+
+        // ================================================================
+        // 3. SPLIT LOGIC – 4‑way
+        // ================================================================
+        function performSplit(css) {
+            var layoutItems = [
+                'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom',
+                'padding', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom',
+                'float', 'display', 'visibility', 'width', 'max-width', 'min-width',
+                'height', 'position', 'top', 'bottom', 'left', 'right',
+                'text-align', 'text-indent', 'vertical-align', 'list-style-position',
+                'clear', 'overflow', 'z-index', 'border-spacing', 'content'
+            ];
+            var fontItems = [
+                'font', 'font-family', 'font-size', 'font-weight', 'font-style',
+                'font-variant', 'font-stretch', 'line-height', 'letter-spacing',
+                'word-spacing', 'text-transform', 'text-decoration',
+                'text-decoration-line', 'text-decoration-style', 'text-decoration-color',
+                'text-shadow', 'font-display'
+            ];
+            var colorItems = [
+                'color', 'background-color', 'background', 'border-color', 'outline-color',
+                'text-decoration-color', '-webkit-text-fill-color', 'fill', 'stroke'
+            ];
+
+            function arrayToObject(arr) {
+                var o = {};
+                for (var i = 0; i < arr.length; i++) o[arr[i]] = '';
+                return o;
+            }
+            var layoutLookup = arrayToObject(layoutItems);
+            var fontLookup = arrayToObject(fontItems);
+            var colorLookup = arrayToObject(colorItems);
+
+            var sheet = parseCSS(css);
+            var layoutBuilder = '',
+                styleBuilder = '',
+                fontsBuilder = '',
+                colorsBuilder = '';
+            var rules = sheet.stylesheet.rules;
+
+            for (var i = 0; i < rules.length; i++) {
+                var rule = rules[i];
+
+                if (rule.hasOwnProperty('comment')) {
+                    var prefix = (i !== 0) ? '\r\n\r\n' : '';
+                    layoutBuilder += prefix + '/*' + rule.comment + '*/\r\n';
+                    styleBuilder += prefix + '/*' + rule.comment + '*/\r\n';
+                    fontsBuilder += prefix + '/*' + rule.comment + '*/\r\n';
+                    colorsBuilder += prefix + '/*' + rule.comment + '*/\r\n';
+                    continue;
+                }
+
+                if (rule.hasOwnProperty('fontface')) {
+                    fontsBuilder += '@font-face {';
+                    var decls = rule.declarations || [];
+                    for (var fi = 0; fi < decls.length; fi++) {
+                        fontsBuilder += decls[fi].fullDec || '';
+                    }
+                    fontsBuilder += '}|\r\n';
+                    continue;
+                }
+
+                if (rule.hasOwnProperty('media')) {
+                    var mediaLayout = '',
+                        mediaStyle = '',
+                        mediaFonts = '',
+                        mediaColors = '';
+                    mediaLayout += '@media ' + rule.media + ' {|';
+                    mediaStyle += '@media ' + rule.media + ' {|';
+                    mediaFonts += '@media ' + rule.media + ' {|';
+                    mediaColors += '@media ' + rule.media + ' {|';
+
+                    var mediaRules = rule.rules || [];
+                    for (var mi = 0; mi < mediaRules.length; mi++) {
+                        var mr = mediaRules[mi];
+                        if (mr.hasOwnProperty('comment')) {
+                            var cp = '\r\n\r\n\t/*' + mr.comment + '*/\r\n';
+                            mediaLayout += cp;
+                            mediaStyle += cp;
+                            mediaFonts += cp;
+                            mediaColors += cp;
+                            continue;
+                        }
+                        var sel = (mr.selectors && mr.selectors.selector) || '';
+                        var layoutRule = sel + ' {',
+                            styleRule = sel + ' {',
+                            fontsRule = sel + ' {',
+                            colorsRule = sel + ' {';
+                        var decls = mr.declarations || [];
+                        var hasLayout = false,
+                            hasStyle = false,
+                            hasFonts = false,
+                            hasColors = false;
+                        for (var di = 0; di < decls.length; di++) {
+                            var d = decls[di];
+                            var prop = d.property || '';
+                            if (prop in layoutLookup) {
+                                layoutRule += d.fullDec || '';
+                                hasLayout = true;
+                            } else if (prop in fontLookup) {
+                                fontsRule += d.fullDec || '';
+                                hasFonts = true;
+                            } else if (prop in colorLookup) {
+                                colorsRule += d.fullDec || '';
+                                hasColors = true;
+                            } else {
+                                styleRule += d.fullDec || '';
+                                hasStyle = true;
+                            }
+                        }
+                        if (hasLayout) {
+                            mediaLayout += layoutRule + '}|';
+                        }
+                        if (hasStyle) {
+                            mediaStyle += styleRule + '}|';
+                        }
+                        if (hasFonts) {
+                            mediaFonts += fontsRule + '}|';
+                        }
+                        if (hasColors) {
+                            mediaColors += colorsRule + '}|';
+                        }
+                    }
+                    if (mediaLayout.length > 0) {
+                        layoutBuilder += mediaLayout + '}|\r\n';
+                    }
+                    if (mediaStyle.length > 0) {
+                        styleBuilder += mediaStyle + '}|\r\n';
+                    }
+                    if (mediaFonts.length > 0) {
+                        fontsBuilder += mediaFonts + '}|\r\n';
+                    }
+                    if (mediaColors.length > 0) {
+                        colorsBuilder += mediaColors + '}|\r\n';
+                    }
+                    continue;
+                }
+
+                if (!rule.selectors) continue;
+                var selector = rule.selectors.selector || '';
+                var layoutRule = selector + ' {',
+                    styleRule = selector + ' {',
+                    fontsRule = selector + ' {',
+                    colorsRule = selector + ' {';
+                var hasLayout = false,
+                    hasStyle = false,
+                    hasFonts = false,
+                    hasColors = false;
+                var decls = rule.declarations || [];
+                for (var j = 0; j < decls.length; j++) {
+                    var dec = decls[j];
+                    var prop = dec.property || '';
+                    if (prop in layoutLookup) {
+                        layoutRule += dec.fullDec || '';
+                        hasLayout = true;
+                    } else if (prop in fontLookup) {
+                        fontsRule += dec.fullDec || '';
+                        hasFonts = true;
+                    } else if (prop in colorLookup) {
+                        colorsRule += dec.fullDec || '';
+                        hasColors = true;
+                    } else {
+                        styleRule += dec.fullDec || '';
+                        hasStyle = true;
+                    }
+                }
+                if (hasLayout) {
+                    layoutBuilder += layoutRule + '}|\r\n';
+                }
+                if (hasStyle) {
+                    styleBuilder += styleRule + '}|\r\n';
+                }
+                if (hasFonts) {
+                    fontsBuilder += fontsRule + '}|\r\n';
+                }
+                if (hasColors) {
+                    colorsBuilder += colorsRule + '}|\r\n';
+                }
+            }
+
+            function cleanRules(arrStr) {
+                var parts = arrStr.split('|');
+                var result = [];
+                for (var i = 0; i < parts.length; i++) {
+                    var item = parts[i];
+                    if (item.indexOf('{}') > -1) continue;
+                    if (item.trim() === '') continue;
+                    result.push(item);
+                }
+                return result.join(' ');
+            }
+
+            var layoutRaw = cleanRules(layoutBuilder);
+            var styleRaw = cleanRules(styleBuilder);
+            var fontsRaw = cleanRules(fontsBuilder);
+            var colorsRaw = cleanRules(colorsBuilder);
+
+            function removeZeroUnits(str) {
+                var units = ['px', 'em', 'ex', 'pt', '%', 'in', 'mm', 'cm', 'pc'];
+                for (var i = 0; i < units.length; i++) {
+                    str = str.replace(new RegExp(' 0' + units[i], 'g'), ' 0');
+                    str = str.replace(new RegExp(':0' + units[i], 'g'), ':0');
+                    str = str.replace(new RegExp('\\s0' + units[i], 'g'), ' 0');
+                }
+                return str;
+            }
+
+            var layoutBeautified = cssbeautify(layoutRaw, { indent: '\t', openbrace: 'end-of-line',
+                autosemicolon: false });
+            var styleBeautified = cssbeautify(styleRaw, { indent: '\t', openbrace: 'end-of-line',
+                autosemicolon: false });
+            var fontsBeautified = cssbeautify(fontsRaw, { indent: '\t', openbrace: 'end-of-line',
+                autosemicolon: false });
+            var colorsBeautified = cssbeautify(colorsRaw, { indent: '\t', openbrace: 'end-of-line',
+                autosemicolon: false });
+
+            layoutBeautified = removeZeroUnits(layoutBeautified);
+            styleBeautified = removeZeroUnits(styleBeautified);
+            fontsBeautified = removeZeroUnits(fontsBeautified);
+            colorsBeautified = removeZeroUnits(colorsBeautified);
+
+            return {
+                layout: layoutBeautified,
+                style: styleBeautified,
+                fonts: fontsBeautified,
+                colors: colorsBeautified
+            };
+        }
+
+        // ================================================================
+        // 4. UI & WORKER
+        // ================================================================
+        (function() {
+            'use strict';
+
+            // DOM refs
+            var textarea = document.getElementById('cssInput');
+            var splitBtn = document.getElementById('splitBtn');
+            var splitLabel = document.getElementById('splitLabel');
+            var statusMsg = document.getElementById('statusMsg');
+            var outputs = document.getElementById('outputs');
+            var layoutOut = document.getElementById('layoutOutput');
+            var styleOut = document.getElementById('styleOutput');
+            var fontsOut = document.getElementById('fontsOutput');
+            var colorsOut = document.getElementById('colorsOutput');
+            var layoutCount = document.getElementById('layoutCount');
+            var styleCount = document.getElementById('styleCount');
+            var fontsCount = document.getElementById('fontsCount');
+            var colorsCount = document.getElementById('colorsCount');
+            var layoutSize = document.getElementById('layoutSize');
+            var styleSize = document.getElementById('styleSize');
+            var fontsSize = document.getElementById('fontsSize');
+            var colorsSize = document.getElementById('colorsSize');
+            var charCount = document.getElementById('charCount');
+            var uploadBtn = document.getElementById('uploadBtn');
+            var fileInput = document.getElementById('fileInput');
+            var pasteBtn = document.getElementById('pasteBtn');
+            var clearBtn = document.getElementById('clearBtn');
+            var resetBtn = document.getElementById('resetBtn');
+
+            var defaultCSS = `/* comments ahoy! */
+                    .hello {
+                        margin: 0;
+                        /* comment */
+                        color: #333;
+                        font-size: 16px;
+                    }
+                    /* even more comments */
+                    .example {
+                        padding: 10px 20px;
+                        background: #f0f0f0;
+                        border: 1px solid #ccc;
+                        display: flex;
+                        width: 100%;
+                        position: relative;
+                        font-family: 'Arial', sans-serif;
+                        color: #222;
+                    }
+                    @font-face {
+                        font-family: 'MyFont';
+                        src: url('font.woff2');
+                    }`;
+
+            // utilities
+            function formatSize(bytes) {
+                if (bytes === 0) return '0 B';
+                var k = 1024;
+                var sizes = ['B', 'KB', 'MB'];
+                var i = Math.floor(Math.log(bytes) / Math.log(k));
+                var val = (bytes / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1);
+                return val + ' ' + sizes[i];
+            }
+
+            function getStringSize(str) {
+                return new Blob([str]).size;
+            }
+
+            // ---- CodeMirror for input ----
+            var editor = CodeMirror.fromTextArea(textarea, {
+                mode: 'css',
+                lineNumbers: true,
+                matchBrackets: false,
+                lineWrapping: true,
+                tabSize: 4,
+                theme: 'default',
+                viewportMargin: Infinity,
+            });
+
+            function updateCharCount() {
+                var val = editor.getValue();
+                var size = getStringSize(val);
+                charCount.textContent = val.length + ' chars · ' + formatSize(size);
+            }
+            editor.on('change', updateCharCount);
+            updateCharCount();
+
+            // ---- CodeMirror for outputs (read‑only) ----
+            var outputEditors = {};
+
+            function initOutputEditor(element) {
+                if (!element) return null;
+                // If already a CodeMirror instance, return it
+                if (element.CodeMirror) return element.CodeMirror;
+                var cm = CodeMirror(function(parent) {
+                    // Replace the element's content with a CodeMirror wrapper
+                    // We'll keep the parent div and attach CodeMirror to it
+                    while (element.firstChild) element.removeChild(element.firstChild);
+                    element.appendChild(parent);
+                }, {
+                    mode: 'css',
+                    lineNumbers: true,
+                    matchBrackets: false,
+                    lineWrapping: true,
+                    tabSize: 4,
+                    theme: 'default',
+                    readOnly: true,
+                    viewportMargin: Infinity,
+                });
+                // Store reference
+                element.CodeMirror = cm;
+                return cm;
+            }
+
+            function setOutputValue(element, value) {
+                if (!element) return;
+                var cm = element.CodeMirror;
+                if (!cm) {
+                    cm = initOutputEditor(element);
+                }
+                if (cm) {
+                    cm.setValue(value || '');
+                    // Refresh to adjust height
+                    setTimeout(function() { cm.refresh(); }, 50);
+                }
+            }
+
+            // ---- Web Worker ----
+            var worker;
+
+            function initWorker() {
+                var workerCode = `
+                    ${parseCSS.toString()}
+                    ${cssbeautify.toString()}
+                    ${performSplit.toString()}
+
+                    self.onmessage = function(e) {
+                        try {
+                            var result = performSplit(e.data);
+                            self.postMessage({ success: true, result: result });
+                        } catch(err) {
+                            self.postMessage({ success: false, error: err.message });
+                        }
+                    };
+                `;
+                var blob = new Blob([workerCode], { type: 'application/javascript' });
+                var url = URL.createObjectURL(blob);
+                worker = new Worker(url);
+                worker.onerror = function(err) {
+                    statusMsg.textContent = '❌ Worker error: ' + err.message;
+                    splitBtn.disabled = false;
+                    splitLabel.textContent = 'Split!';
+                };
+            }
+
+            function splitCSS() {
+                var css = editor.getValue();
+                if (!css.trim()) {
+                    statusMsg.textContent = '⚠️ empty input';
+                    return;
+                }
+
+                splitBtn.disabled = true;
+                splitLabel.innerHTML = '<span class="spinner"></span>';
+                statusMsg.textContent = 'splitting…';
+
+                if (!worker) {
+                    initWorker();
+                }
+
+                var listener = function(e) {
+                    var data = e.data;
+                    if (data.success) {
+                        displayResults(data.result);
+                        statusMsg.textContent = '✓ done';
+                        outputs.classList.remove('hidden');
+                    } else {
+                        statusMsg.textContent = '❌ error: ' + data.error;
+                    }
+                    splitBtn.disabled = false;
+                    splitLabel.textContent = 'Split!';
+                    worker.removeEventListener('message', listener);
+                };
+                worker.addEventListener('message', listener);
+
+                var timeout = setTimeout(function() {
+                    worker.removeEventListener('message', listener);
+                    splitBtn.disabled = false;
+                    splitLabel.textContent = 'Split!';
+                    statusMsg.textContent = '⚠️ worker timeout';
+                }, 8000);
+
+                var originalListener = listener;
+                listener = function(e) {
+                    clearTimeout(timeout);
+                    originalListener(e);
+                };
+                worker.removeEventListener('message', originalListener);
+                worker.addEventListener('message', listener);
+
+                worker.postMessage(css);
+            }
+
+            function displayResults(result) {
+                var layout = result.layout || '';
+                var style = result.style || '';
+                var fonts = result.fonts || '';
+                var colors = result.colors || '';
+
+                setOutputValue(layoutOut, layout);
+                setOutputValue(styleOut, style);
+                setOutputValue(fontsOut, fonts);
+                setOutputValue(colorsOut, colors);
+
+                var lc = layout ? layout.split('\n').filter(function(l) { return l.trim(); }).length : 0;
+                var sc = style ? style.split('\n').filter(function(l) { return l.trim(); }).length : 0;
+                var fc = fonts ? fonts.split('\n').filter(function(l) { return l.trim(); }).length : 0;
+                var cc = colors ? colors.split('\n').filter(function(l) { return l.trim(); }).length : 0;
+
+                layoutCount.textContent = '(' + lc + ' lines)';
+                styleCount.textContent = '(' + sc + ' lines)';
+                fontsCount.textContent = '(' + fc + ' lines)';
+                colorsCount.textContent = '(' + cc + ' lines)';
+
+                layoutSize.textContent = '· ' + formatSize(getStringSize(layout));
+                styleSize.textContent = '· ' + formatSize(getStringSize(style));
+                fontsSize.textContent = '· ' + formatSize(getStringSize(fonts));
+                colorsSize.textContent = '· ' + formatSize(getStringSize(colors));
+            }
+
+            // ---- Copy (works with CodeMirror) ----
+            document.querySelectorAll('.copy-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var targetId = this.dataset.target;
+                    var el = document.getElementById(targetId);
+                    if (!el) return;
+                    var text = '';
+                    if (el.CodeMirror) {
+                        text = el.CodeMirror.getValue();
+                    } else {
+                        text = el.textContent || '';
+                    }
+                    if (!text.trim()) {
+                        statusMsg.textContent = '⚠️ nothing to copy';
+                        return;
+                    }
+                    navigator.clipboard.writeText(text).then(function() {
+                        statusMsg.textContent = '✓ copied!';
+                        setTimeout(function() { statusMsg.textContent = ''; }, 1500);
+                    }).catch(function() {
+                        var ta = document.createElement('textarea');
+                        ta.value = text;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        statusMsg.textContent = '✓ copied!';
+                        setTimeout(function() { statusMsg.textContent = ''; }, 1500);
+                    });
+                });
+            });
+
+            // ---- Download (works with CodeMirror) ----
+            document.querySelectorAll('.download-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var targetId = this.dataset.target;
+                    var filename = this.dataset.filename || 'style.css';
+                    var el = document.getElementById(targetId);
+                    if (!el) return;
+                    var text = '';
+                    if (el.CodeMirror) {
+                        text = el.CodeMirror.getValue();
+                    } else {
+                        text = el.textContent || '';
+                    }
+                    if (!text.trim()) {
+                        statusMsg.textContent = '⚠️ nothing to download';
+                        return;
+                    }
+                    var blob = new Blob([text], { type: 'text/css' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    statusMsg.textContent = '✓ downloaded ' + filename;
+                    setTimeout(function() { statusMsg.textContent = ''; }, 1500);
+                });
+            });
+
+            // ---- Upload ----
+            uploadBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            fileInput.addEventListener('change', function(e) {
+                var file = this.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    var content = ev.target.result;
+                    editor.setValue(content);
+                    updateCharCount();
+                    statusMsg.textContent = '✓ loaded ' + file.name;
+                    setTimeout(function() { statusMsg.textContent = ''; }, 1500);
+                    outputs.classList.add('hidden');
+                    clearOutputs();
+                };
+                reader.readAsText(file);
+                this.value = '';
+            });
+
+            // ---- Paste ----
+            pasteBtn.addEventListener('click', function() {
+                if (!navigator.clipboard) {
+                    statusMsg.textContent = '⚠️ clipboard not available';
+                    return;
+                }
+                navigator.clipboard.readText().then(function(text) {
+                    if (text) {
+                        editor.setValue(text);
+                        updateCharCount();
+                        statusMsg.textContent = '✓ pasted from clipboard';
+                        setTimeout(function() { statusMsg.textContent = ''; }, 1500);
+                        outputs.classList.add('hidden');
+                        clearOutputs();
+                    } else {
+                        statusMsg.textContent = '⚠️ clipboard empty';
+                    }
+                }).catch(function() {
+                    statusMsg.textContent = '⚠️ cannot read clipboard';
+                });
+            });
+
+            // ---- Clear ----
+            function clearOutputs() {
+                setOutputValue(layoutOut, '');
+                setOutputValue(styleOut, '');
+                setOutputValue(fontsOut, '');
+                setOutputValue(colorsOut, '');
+                layoutCount.textContent = '';
+                styleCount.textContent = '';
+                fontsCount.textContent = '';
+                colorsCount.textContent = '';
+                layoutSize.textContent = '';
+                styleSize.textContent = '';
+                fontsSize.textContent = '';
+                colorsSize.textContent = '';
+            }
+
+            function clearAll() {
+                editor.setValue('');
+                updateCharCount();
+                outputs.classList.add('hidden');
+                clearOutputs();
+                statusMsg.textContent = '✓ cleared';
+                setTimeout(function() { statusMsg.textContent = ''; }, 1000);
+            }
+
+            clearBtn.addEventListener('click', function() {
+                if (editor.getValue().trim() && !confirm('Clear input and outputs?')) return;
+                clearAll();
+            });
+
+            // ---- Reset ----
+            function resetToDefault() {
+                editor.setValue(defaultCSS);
+                updateCharCount();
+                setTimeout(function() { splitCSS(); }, 100);
+                statusMsg.textContent = '↺ reset to default';
+                setTimeout(function() { statusMsg.textContent = ''; }, 1500);
+            }
+
+            resetBtn.addEventListener('click', function() {
+                if (editor.getValue().trim() !== defaultCSS.trim() && !confirm('Reset to default CSS?')) return;
+                resetToDefault();
+            });
+
+            // ---- Split button ----
+            splitBtn.addEventListener('click', splitCSS);
+
+            // Keyboard shortcut
+            editor.getWrapperElement().addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    splitCSS();
+                }
+            });
+
+            // ---- Auto-split on load ----
+            setTimeout(function() { splitCSS(); }, 200);
+
+        })();
+    </script>
+
+</body>
+</html>
