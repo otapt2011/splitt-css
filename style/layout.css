@@ -1,0 +1,41 @@
+.container {
+	margin-right: auto;
+	margin-left: auto;
+	width: 95%;
+}
+.no-display {
+	display: none;
+}
+.clearfix {
+	clear: both;
+} 
+.left {
+	float: left;
+}
+.css-copy-div {
+	padding-right: 5px;
+	width: 100%;
+}
+.css-layout-div {
+	padding-right: 15px;
+	width: 49%;
+}
+.css-style-div {
+	width: 49%;
+}
+.css-copy-div .CodeMirror{
+	width: 100%;
+  	height: 400px;
+}
+.css-layout-div .CodeMirror{
+	width: 100%;
+  	height: 400px;
+}
+.css-style-div .CodeMirror{
+	width: 100%;
+  	height: 400px;
+}
+.split {
+	margin-top: 5px;
+	float:right;
+}
